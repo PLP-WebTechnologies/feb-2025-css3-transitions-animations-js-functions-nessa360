@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cosmic Explorer: Interactive Space Journey</title>
+    <style>
+      /* Base styles */
+      :root {
+        --primary-color: #7e57c2;
+        --secondary-color: #5e35b1;
+        --text-color: #e0e0e0;
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --stars-color: #ffffff;
+        --planet-color: #ff4081;
+        --transition-speed: 0.5s;
+      }
+
+      body {
+        font-family: "Exo 2", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+        transition: background-color var(--transition-speed),
+          color var(--transition-speed);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow-x: hidden;
+        background-image: radial-gradient(
+            circle at top right,
+            #1a237e,
+            transparent 80%
+          ),
+          radial-gradient(circle at bottom left, #311b92, transparent 80%);
+        .container {
+          flex: 1;
+          width: 100%;
+          padding-bottom: 2rem; /* Add some space before footer */
+        }
+      }
+
+      /* Light theme (Daylight Space) */
+      body.light-theme {
+        --primary-color: #26a69a;
+        --secondary-color: #00897b;
+        --text-color: #212121;
+        --bg-color: #e0f7fa;
+        --card-bg: #ffffff;
+        --stars-color: #ffeb3b;
+        --planet-color: #ff9800;
+        background-image: radial-gradient(
+            circle at top right,
+            #80deea,
+            transparent 80%
+          ),
+          radial-gradient(circle at bottom left, #4dd0e1, transparent 80%);
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        transition: transform var(--transition-speed),
+          background-color var(--transition-speed),
+          box-shadow var(--transition-speed);
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          to bottom right,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.05) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: rotate(45deg);
+        pointer-events: none;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(126, 87, 194, 0.4);
+      }
+
+      h1 {
+        color: var(--primary-color);
+        transition: color var(--transition-speed);
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-size: 3rem;
+        text-shadow: 0 0 10px rgba(126, 87, 194, 0.5);
+        letter-spacing: 2px;
+      }
+
+      h2 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+      }
+
+      p {
+        line-height: 1.6;
+        font-size: 1.1rem;
+      }
+
+      /* Button styles with animations */
+      .btn {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin: 1rem 0.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .btn:hover {
+        background: linear-gradient(
+          135deg,
+          var(--secondary-color),
+          var(--primary-color)
+        );
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      /* Button click animation */
+      .btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+      }
+
+      .btn:focus:not(:active)::after {
+        animation: ripple 1s ease-out;
+      }
+
+      /* Theme toggle */
+      .theme-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 1rem auto;
+      }
+
+      /* Animation keyframes */
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes slideIn {
+        0% {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        100% {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      @keyframes ripple {
+        0% {
+          transform: scale(0, 0);
+          opacity: 1;
+        }
+        20% {
+          transform: scale(25, 25);
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: scale(40, 40);
+        }
+      }
+
+      .pulse-animation {
+        animation: pulse 1.5s infinite;
+      }
+
+      .slide-in {
+        animation: slideIn 0.6s forwards;
+      }
+
+      .fade-in {
+        animation: fadeIn 1s forwards;
+      }
+
+      /* Settings panel */
+      .settings-panel {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        transition: all var(--transition-speed);
+      }
+
+      .preference {
+        margin: 1rem 0;
+      }
+
+      .preference label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      .preference select {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        width: 100%;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+      }
+
+      /* Custom animated checkbox for dark mode toggle */
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .toggle-slider {
+        background-color: var(--primary-color);
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+      }
+
+      .mode-label {
+        margin-right: 10px;
+        font-weight: 600;
+      }
+
+      /* Notification */
+      .notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.5s ease;
+        z-index: 1000;
+      }
+
+      .notification.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      /* Space elements */
+      .star {
+        position: absolute;
+        background-color: var(--stars-color);
+        border-radius: 50%;
+        opacity: 0.8;
+        animation: twinkle 4s infinite ease-in-out;
+      }
+
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 0.2;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .planet {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 30% 30%,
+          var(--planet-color),
+          #000 80%
+        );
+        box-shadow: 0 0 20px rgba(255, 64, 129, 0.5);
+        opacity: 0.8;
+        z-index: 0;
+        animation: orbit 60s infinite linear;
+      }
+
+      @keyframes orbit {
+        0% {
+          transform: rotate(0deg) translateX(400px) rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg) translateX(400px) rotate(-360deg);
+        }
+      }
+
+      .comet {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background-color: white;
+        box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+        opacity: 0;
+        z-index: 0;
+        animation: comet 8s infinite ease-in-out;
+      }
+
+      @keyframes comet {
+        0% {
+          transform: translate(-100px, -100px) rotate(45deg) scale(0.5);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        30% {
+          transform: translate(calc(100vw + 100px), calc(100vh + 100px))
+            rotate(45deg) scale(1.5);
+          opacity: 0;
+        }
+        100% {
+          transform: translate(calc(100vw + 100px), calc(100vh + 100px))
+            rotate(45deg) scale(1.5);
+          opacity: 0;
+        }
+      }
+
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-5px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(5px);
+        }
+      }
+
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-20px);
+        }
+        60% {
+          transform: translateY(-10px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Space elements will be added here by JavaScript -->
+    <div class="container fade-in">
+      <h1>Cosmic Explorer</h1>
+
+      <div class="card slide-in" style="animation-delay: 0.1s">
+        <h2>Welcome, Space Traveler</h2>
+        <p>
+          Embark on an interactive journey through the cosmos. This cosmic
+          vessel allows you to navigate between the mysterious dark void and the
+          bright celestial expanse.
+        </p>
+        <p>
+          Adjust your spacecraft settings below and watch as the universe
+          transforms around you. Your navigation preferences will be stored in
+          the ship's memory banks!
+        </p>
+
+        <div class="theme-toggle">
+          <span class="mode-label">Dark Mode</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="themeToggle" />
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="mode-label">Light Mode</span>
+        </div>
+
+        <button id="animateButton" class="btn">Activate Thrusters!</button>
+      </div>
+
+      <div class="settings-panel slide-in" style="animation-delay: 0.3s">
+        <h2>Spacecraft Controls</h2>
+
+        <div class="preference">
+          <label for="animationPreference">Thruster Pattern:</label>
+          <select id="animationPreference">
+            <option value="pulse">Quantum Pulse</option>
+            <option value="shake">Stellar Vibration</option>
+            <option value="bounce">Cosmic Bounce</option>
+            <option value="none">Engines Off</option>
+          </select>
+        </div>
+
+        <div class="preference">
+          <label for="transitionSpeed">Warp Speed:</label>
+          <select id="transitionSpeed">
+            <option value="fast">Hyperdrive</option>
+            <option value="normal">Cruising</option>
+            <option value="slow">Nebula Drift</option>
+          </select>
+        </div>
+
+        <button id="savePreferences" class="btn">Save Flight Path</button>
+        <button id="resetPreferences" class="btn">Reset Navigation</button>
+      </div>
+    </div>
+
+    <div id="notification" class="notification">
+      Flight path saved to ship's memory!
+    </div>
+
+    <script>
+      // DOM Elements
+      const themeToggle = document.getElementById("themeToggle");
+      const animateButton = document.getElementById("animateButton");
+      const animationSelect = document.getElementById("animationPreference");
+      const transitionSpeedSelect = document.getElementById("transitionSpeed");
+      const saveButton = document.getElementById("savePreferences");
+      const resetButton = document.getElementById("resetPreferences");
+      const notification = document.getElementById("notification");
+      const darkModeLabel = document.querySelector(".mode-label:first-of-type");
+      const lightModeLabel = document.querySelector(".mode-label:last-of-type");
+
+      // Default preferences
+      const defaultPreferences = {
+        darkMode: false,
+        animationStyle: "pulse",
+        transitionSpeed: "normal",
+      };
+
+      // Create space elements
+      function createSpaceElements() {
+        const body = document.body;
+
+        // Create stars
+        for (let i = 0; i < 100; i++) {
+          const star = document.createElement("div");
+          star.className = "star";
+          star.style.width = `${Math.random() * 3 + 1}px`;
+          star.style.height = star.style.width;
+          star.style.left = `${Math.random() * 100}vw`;
+          star.style.top = `${Math.random() * 100}vh`;
+          star.style.animationDelay = `${Math.random() * 4}s`;
+          body.appendChild(star);
+        }
+
+        // Create planet
+        const planet = document.createElement("div");
+        planet.className = "planet";
+        planet.style.top = "50%";
+        planet.style.left = "50%";
+        body.appendChild(planet);
+
+        // Create comet
+        const comet = document.createElement("div");
+        comet.className = "comet";
+        body.appendChild(comet);
+      }
+
+      // Helper function to show notification
+      function showNotification(message) {
+        notification.textContent = message;
+        notification.classList.add("show");
+
+        setTimeout(() => {
+          notification.classList.remove("show");
+        }, 3000);
+      }
+
+      // Load preferences from localStorage
+      function loadPreferences() {
+        const savedPreferences = localStorage.getItem("userPreferences");
+
+        if (savedPreferences) {
+          try {
+            const preferences = JSON.parse(savedPreferences);
+
+            // Apply saved preferences
+            themeToggle.checked = preferences.darkMode;
+            animationSelect.value = preferences.animationStyle;
+            transitionSpeedSelect.value = preferences.transitionSpeed;
+
+            // Apply theme
+            updateTheme(preferences.darkMode);
+
+            // Apply transition speed
+            applyTransitionSpeed(preferences.transitionSpeed);
+
+            showNotification("Navigation systems loaded!");
+          } catch (e) {
+            console.error("Error parsing saved preferences:", e);
+            // If there's an error, reset to defaults
+            resetToDefaults();
+          }
+        } else {
+          // No saved preferences, use defaults
+          resetToDefaults();
+        }
+      }
+
+      // Update theme and labels
+      function updateTheme(isDarkMode) {
+        if (isDarkMode) {
+          document.body.classList.add("light-theme");
+          darkModeLabel.style.opacity = "0.5";
+          lightModeLabel.style.opacity = "1";
+        } else {
+          document.body.classList.remove("light-theme");
+          darkModeLabel.style.opacity = "1";
+          lightModeLabel.style.opacity = "0.5";
+        }
+      }
+
+      // Save preferences to localStorage
+      function savePreferences() {
+        const preferences = {
+          darkMode: themeToggle.checked,
+          animationStyle: animationSelect.value,
+          transitionSpeed: transitionSpeedSelect.value,
+        };
+
+        localStorage.setItem("userPreferences", JSON.stringify(preferences));
+        showNotification("Flight path saved to ship's memory!");
+      }
+
+      // Reset preferences to defaults
+      function resetToDefaults() {
+        themeToggle.checked = defaultPreferences.darkMode;
+        animationSelect.value = defaultPreferences.animationStyle;
+        transitionSpeedSelect.value = defaultPreferences.transitionSpeed;
+
+        updateTheme(defaultPreferences.darkMode);
+        applyTransitionSpeed(defaultPreferences.transitionSpeed);
+
+        localStorage.removeItem("userPreferences");
+        showNotification("Navigation reset to factory settings!");
+      }
+
+      // Apply transition speed
+      function applyTransitionSpeed(speed) {
+        let speedValue;
+
+        switch (speed) {
+          case "fast":
+            speedValue = "0.3s";
+            break;
+          case "slow":
+            speedValue = "1s";
+            break;
+          default: // normal
+            speedValue = "0.5s";
+        }
+
+        document.documentElement.style.setProperty(
+          "--transition-speed",
+          speedValue
+        );
+      }
+
+      // Apply animation to element
+      function applyAnimation(element, animationType) {
+        // Remove any existing animations
+        element.classList.remove("pulse-animation");
+        element.style.animation = "";
+
+        // Force a reflow to restart animation
+        void element.offsetWidth;
+
+        switch (animationType) {
+          case "pulse":
+            element.classList.add("pulse-animation");
+            break;
+          case "shake":
+            element.style.animation = "shake 0.5s";
+            break;
+          case "bounce":
+            element.style.animation = "bounce 0.5s";
+            break;
+          default:
+            // No animation
+            break;
+        }
+      }
+
+      // Event Listeners
+      themeToggle.addEventListener("change", () => {
+        updateTheme(themeToggle.checked);
+      });
+
+      animateButton.addEventListener("click", () => {
+        const cards = document.querySelectorAll(".card");
+        const animationType = animationSelect.value;
+
+        cards.forEach((card) => {
+          applyAnimation(card, animationType);
+        });
+      });
+
+      transitionSpeedSelect.addEventListener("change", () => {
+        applyTransitionSpeed(transitionSpeedSelect.value);
+      });
+
+      saveButton.addEventListener("click", savePreferences);
+      resetButton.addEventListener("click", resetToDefaults);
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        createSpaceElements();
+        loadPreferences();
+      });
+    </script>
+  </body>
+</html>
